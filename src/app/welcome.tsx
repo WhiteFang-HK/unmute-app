@@ -16,8 +16,8 @@ export default function Welcome() {
     <Screen
       footer={
         <>
-          <Button label="Create account" onPress={() => router.push('/sign-in')} />
-          <Button label="I already have an account" kind="secondary" onPress={() => router.push('/sign-in')} />
+          <Button label="Create account" onPress={() => router.push({ pathname: '/sign-in', params: { mode: 'create' } })} />
+          <Button label="I already have an account" kind="secondary" onPress={() => router.push({ pathname: '/sign-in', params: { mode: 'signin' } })} />
           <Small style={{ textAlign: 'center' }}>Your legal name is never shown. You choose what members see.</Small>
         </>
       }>
