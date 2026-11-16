@@ -51,6 +51,10 @@ export default function Inbox() {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
                 <Text style={{ fontFamily: F.bold, fontSize: 15, color: C.text, flexShrink: 1 }} numberOfLines={1}>
                   {c.title}
+                  <Text style={{ fontFamily: F.semi, fontSize: 12, color: KIND_COLOUR[c.kind] }}>
+                    {'  '}
+                    {{ group: 'Group', friend: 'Friend', dating: 'Match', pro: 'CARE' }[c.kind]}
+                  </Text>
                 </Text>
                 <Text style={{ fontFamily: F.body, fontSize: 12, color: C.muted }}>{timeAgo(c.last_at)}</Text>
               </View>

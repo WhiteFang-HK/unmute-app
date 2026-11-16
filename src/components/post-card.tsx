@@ -45,7 +45,7 @@ export function PostCard({ post, full, showGroup = true }: { post: FeedPost; ful
     else await supabase.from('reactions').delete().match({ post_id: p.id, kind });
   }
 
-  const body = (
+  const header = (
     <>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         {p.is_anonymous ? (
@@ -63,37 +63,54 @@ export function PostCard({ post, full, showGroup = true }: { post: FeedPost; ful
             {p.review_state !== 'published' ? ` · ${p.review_state === 'pending' ? 'Waiting for review' : 'Hidden by moderators'}` : ''}
           </Text>
         </View>
-        {!p.is_mine ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Report post"
-            hitSlop={10}
-            onPress={() => router.push({ pathname: '/report', params: { post: p.id } })}>
-            <Feather name="more-horizontal" size={20} color={C.muted} />
-          </Pressable>
-        ) : null}
       </View>
       <Text style={{ fontFamily: F.body, fontSize: 15, lineHeight: 22, color: C.softer, marginTop: 10 }} numberOfLines={full ? undefined : 6}>
         {p.body}
       </Text>
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, alignItems: 'center' }}>
-        <ReactBtn label="Strength" n={p.strength_count} on={p.my_strength} onPress={() => react('strength')} />
-        <ReactBtn label="Been there" n={p.been_there_count} on={p.my_been_there} onPress={() => react('been_there')} />
-        <Text style={{ marginLeft: 'auto', fontFamily: F.semi, fontSize: 13, color: C.muted }}>
-          {p.comment_count} {Number(p.comment_count) === 1 ? 'reply' : 'replies'}
-        </Text>
-      </View>
     </>
   );
 
-  if (full) return <View style={{ paddingVertical: 4 }}>{body}</View>;
-  return (
+  const actions = (
+    <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, alignItems: 'center' }}>
+      <ReactBtn label="Strength" n={p.strength_count} on={p.my_strength} onPress={() => react('strength')} />
+      <ReactBtn label="Been there" n={p.been_there_count} on={p.my_been_there} onPress={() => react('been_there')} />
+      <Text style={{ marginLeft: 'auto', fontFamily: F.semi, fontSize: 13, color: C.muted }}>
+        {p.comment_count} {Number(p.comment_count) === 1 ? 'reply' : 'replies'}
+      </Text>
+    </View>
+  );
+
+  const report = !p.is_mine ? (
     <Pressable
       accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/post/[id]', params: { id: p.id } })}
-      style={{ padding: 16, borderRadius: 20, backgroundColor: C.surface }}>
-      {body}
+      accessibilityLabel="Report post"
+      hitSlop={10}
+      onPress={() => router.push({ pathname: '/report', params: { post: p.id } })}
+      style={{ position: 'absolute', top: full ? 4 : 16, right: full ? 0 : 16, padding: 4 }}>
+      <Feather name="more-horizontal" size={20} color={C.muted} />
     </Pressable>
+  ) : null;
+
+  if (full)
+    return (
+      <View style={{ paddingVertical: 4 }}>
+        {header}
+        {actions}
+        {report}
+      </View>
+    );
+  return (
+    <View style={{ padding: 16, borderRadius: 20, backgroundColor: C.surface }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open post"
+        onPress={() => router.push({ pathname: '/post/[id]', params: { id: p.id } })}
+        style={{ paddingRight: 28 }}>
+        {header}
+      </Pressable>
+      {actions}
+      {report}
+    </View>
   );
 }
 

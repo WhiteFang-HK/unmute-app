@@ -5,17 +5,14 @@ import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 
 import { PostCard, colourFor, type FeedPost } from '@/components/post-card';
 import { Avatar, Empty, ErrorText, Header, Loading, Screen, s, timeAgo } from '@/components/ui';
-import { useAuth } from '@/lib/auth';
 import { friendlyError, supabase } from '@/lib/supabase';
 import { must, useLoad } from '@/lib/use-load';
 import { C, F } from '@/theme';
 
-type Comment = { id: string; body: string; created_at: string; author_id: string; author: { display_name: string } | null };
+type Comment = { id: string; body: string; created_at: string; author_name: string | null; is_mine: boolean; is_op: boolean };
 
 export default function PostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session } = useAuth();
-  const uid = session!.user.id;
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -23,13 +20,7 @@ export default function PostScreen() {
   const post = useLoad(async () => (must(await supabase.rpc('feed', { p_post: id, p_limit: 1 })) as FeedPost[])[0] ?? null, [id]);
   const comments = useLoad(
     async () =>
-      must(
-        await supabase
-          .from('comments')
-          .select('id, body, created_at, author_id, author:profiles(display_name)')
-          .eq('post_id', id)
-          .order('created_at'),
-      ) as unknown as Comment[],
+      must(await supabase.rpc('post_comments', { p_post: id })) as Comment[],
     [id],
   );
 
@@ -42,6 +33,7 @@ export default function PostScreen() {
     if (error) return setErr(error.message.includes('row-level') ? 'Join this group to reply.' : friendlyError(error));
     setText('');
     comments.reload();
+    post.reload();
   }
 
   async function removePost() {
@@ -101,10 +93,17 @@ export default function PostScreen() {
         }
         renderItem={({ item: c }) => (
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <Avatar name={c.author?.display_name} color={colourFor(c.author?.display_name)} size={32} />
+            {c.author_name ? (
+              <Avatar name={c.author_name} color={colourFor(c.author_name)} size={32} />
+            ) : (
+              <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: '#4A454C', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontFamily: F.display, fontSize: 14, color: C.text }}>?</Text>
+              </View>
+            )}
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: F.bold, fontSize: 14, color: C.text }}>
-                {c.author_id === uid ? 'You' : c.author?.display_name ?? 'Member'}{' '}
+                {c.is_mine ? 'You' : c.author_name ?? 'Anonymous member'}
+                {c.is_op ? <Text style={{ fontFamily: F.bold, fontSize: 12, color: C.community }}> · Original poster</Text> : null}{' '}
                 <Text style={{ fontFamily: F.body, fontSize: 12, color: C.muted }}>· {timeAgo(c.created_at)}</Text>
               </Text>
               <Text style={{ fontFamily: F.body, fontSize: 14, lineHeight: 21, color: C.softer, marginTop: 2 }}>{c.body}</Text>
