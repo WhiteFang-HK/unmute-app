@@ -41,6 +41,9 @@ export function friendlyError(e: unknown): string {
     NOT_ACTIVE: 'Your account is restricted right now.',
     duplicate: 'That name is taken. Try another.',
   };
+  if (/sending (magic link|confirmation|recovery)? ?email|Error sending/i.test(msg)) {
+    return 'In this test version, codes can only be emailed to the owner\'s address. Tap "Use a password instead" below.';
+  }
   for (const k of Object.keys(map)) if (msg.includes(k)) return map[k];
   if (msg.includes('Network request failed')) return 'No connection. Check your internet and try again.';
   return msg;
