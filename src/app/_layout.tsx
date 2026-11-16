@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 
 import { Loading } from '@/components/ui';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { listenForTaps, registerForPush } from '@/lib/push';
 import { isConfigured } from '@/lib/supabase';
 import { C } from '@/theme';
 
@@ -53,6 +54,13 @@ function Routes() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
+
+  // Phone push: open the right screen on tap; re-register quietly if already allowed.
+  const uid = session?.user.id;
+  useEffect(() => listenForTaps(), []);
+  useEffect(() => {
+    if (uid) registerForPush(false);
+  }, [uid]);
 
   if (!ready) return <Loading />;
 
@@ -101,6 +109,9 @@ function Routes() {
         <Stack.Screen name="privacy" />
         <Stack.Screen name="preview" />
         <Stack.Screen name="delete-account" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="notification-settings" />
+        <Stack.Screen name="tour" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
       </Stack.Protected>
 
       {/* Reachable by anyone who failed the 30+ check */}

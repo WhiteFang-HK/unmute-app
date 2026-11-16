@@ -44,3 +44,5 @@ example
 .env
 .env.*
 !.env.example
+supabase/tests/node_modules/
+supabase/tests/package*.json

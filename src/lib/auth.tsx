@@ -2,6 +2,7 @@ import type { Session } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import { unregisterPush } from './push';
 import { supabase } from './supabase';
 
 export type Profile = {
@@ -19,6 +20,7 @@ export type Profile = {
   discovery_paused: boolean;
   show_age: boolean;
   show_city: boolean;
+  tour_seen: boolean;
   onboarding_step: 'basics' | 'stage' | 'interests' | 'pillars' | 'done';
   role: 'member' | 'moderator' | 'admin' | 'professional';
   status: 'active' | 'restricted' | 'suspended';
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     refreshProfile: () => loadProfile(session?.user.id),
     signOut: async () => {
+      await unregisterPush().catch(() => {});
       await supabase.auth.signOut();
       setProfile(null);
       router.replace('/');
