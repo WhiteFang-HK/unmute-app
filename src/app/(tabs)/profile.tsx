@@ -38,6 +38,8 @@ export default function Profile() {
     ['Edit profile', '', () => router.push('/edit-profile')],
     ['Privacy & visibility', '', () => router.push('/privacy')],
     ['Blocked members', '', () => router.push('/blocked')],
+    ['Notifications', '', () => router.push('/notification-settings')],
+    ['Welcome tour', 'Replay', () => router.push('/tour')],
     ['UNMUTE CARE', 'Open', () => router.push('/care'), C.care],
   ];
   if (profile.role === 'admin' || profile.role === 'moderator') {

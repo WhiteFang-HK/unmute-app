@@ -1,11 +1,15 @@
+import { Feather } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { Card, Logo, Screen, Small } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { useUnreadCount } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
 import { C, F } from '@/theme';
+
+let tourOpened = false; // once per app session, even if effects run twice
 
 const MOODS = ['Heavy', 'Low', 'Okay', 'Lighter', 'Good'];
 
@@ -17,6 +21,16 @@ function greeting() {
 export default function Home() {
   const { profile } = useAuth();
   const [mood, setMood] = useState<number | null>(null);
+  const unread = useUnreadCount();
+
+  // Welcome tour, shown once after onboarding (US-M05-03).
+  const needsTour = profile ? !profile.tour_seen : false;
+  useEffect(() => {
+    if (needsTour && !tourOpened) {
+      tourOpened = true;
+      router.push('/tour');
+    }
+  }, [needsTour]);
 
   async function pickMood(i: number) {
     setMood(i);
@@ -54,7 +68,22 @@ export default function Home() {
 
   return (
     <Screen edges={['top']}>
-      <Logo />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Logo />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+          onPress={() => router.push('/notifications')}
+          hitSlop={8}
+          style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+          <Feather name="bell" size={21} color={C.text} />
+          {unread ? (
+            <View style={{ position: 'absolute', top: 4, right: 2, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: C.ember, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontFamily: F.heavy, fontSize: 11, color: C.ink }}>{unread > 99 ? '99+' : unread}</Text>
+            </View>
+          ) : null}
+        </Pressable>
+      </View>
       <Text accessibilityRole="header" style={{ marginTop: 18, fontFamily: F.display, fontSize: 34, lineHeight: 36, letterSpacing: -1, color: C.text }}>
         {greeting()}, {first || 'friend'}.
       </Text>
