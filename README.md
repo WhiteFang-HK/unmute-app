@@ -11,9 +11,10 @@ Double-click **START-UNMUTE** in this folder, then scan the QR code with the Exp
 (Your Supabase connection is in `src/lib/config.ts`.)
 
 ## Sign-in in this test version
-Email + password, and "Confirm email" is turned off in Supabase, because the free plan's built-in email
-can't send custom codes. To switch to one-time email codes later, connect a free email sender (SMTP) in
-Supabase > Authentication > Emails.
+Email code (6 digits) sent through Resend (SMTP: smtp.resend.com, sender onboarding@resend.dev).
+Without a verified domain in Resend, codes only reach the Resend account's own email address.
+Other testers can tap "Use a password instead". To email anyone, verify a domain in Resend and
+change the sender address in Supabase > Authentication > Emails > SMTP Settings.
 
 ## Make yourself a moderator
 In Supabase > SQL Editor, after you've signed up in the app:
@@ -23,7 +24,7 @@ update public.profiles set role = 'admin' where display_name = 'YOUR_DISPLAY_NAM
 A "Moderation" link then appears in your Profile tab.
 
 ## What's in this version
-Sign-in with email + password · 30+ check (nothing saved if under 30) · onboarding (name, private stage, interests, pillars) ·
+Sign-in with email code (or password) · 30+ check (nothing saved if under 30) · onboarding (name, private stage, interests, pillars) ·
 Community groups, posts (incl. anonymous), replies, reactions · friend suggestions and requests · dating (policy gate,
 mutual matches only) · inbox with live chat · report and block · CARE guides and professionals with enquiries ·
 in-app moderation for staff.

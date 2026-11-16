@@ -6,11 +6,12 @@ import { Body, Button, ErrorText, Eyebrow, Field, Header, Screen, Small, Title }
 import { friendlyError, supabase } from '@/lib/supabase';
 import { C, F } from '@/theme';
 
-// POC sign-in: email + password (no email sending needed on Supabase's free plan).
-// Switch back to one-time email codes once a custom email sender is set up.
+// Sign-in: a one-time code by email (sent through Resend), with password as a fallback.
+// Without a verified domain, Resend only delivers to the Resend account owner's address.
 export default function SignIn() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<'create' | 'signin'>(params.mode === 'signin' ? 'signin' : 'create');
+  const [usePassword, setUsePassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -18,12 +19,19 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
 
   const creating = mode === 'create';
-  const valid = /^\S+@\S+\.\S+$/.test(email.trim()) && password.length >= 8 && (!creating || agreed);
+  const emailOk = /^\S+@\S+\.\S+$/.test(email.trim());
+  const valid = emailOk && (!usePassword || password.length >= 8) && (!creating || agreed);
 
   async function go() {
     setBusy(true);
     setError(null);
     const e = email.trim().toLowerCase();
+    if (!usePassword) {
+      const { error: otpErr } = await supabase.auth.signInWithOtp({ email: e, options: { shouldCreateUser: true } });
+      setBusy(false);
+      if (otpErr) return setError(friendlyError(otpErr));
+      return router.push({ pathname: '/verify', params: { email: e } });
+    }
     const { data, error: err } = creating
       ? await supabase.auth.signUp({ email: e, password })
       : await supabase.auth.signInWithPassword({ email: e, password });
@@ -38,12 +46,12 @@ export default function SignIn() {
   }
 
   return (
-    <Screen footer={<Button label={creating ? 'Create my account' : 'Sign in'} onPress={go} loading={busy} disabled={!valid} />}>
+    <Screen footer={<Button label={!usePassword ? 'Email me a code' : creating ? 'Create my account' : 'Sign in'} onPress={go} loading={busy} disabled={!valid} />}>
       <Header back />
       <View style={{ gap: 14, marginTop: 12 }}>
         <Eyebrow>{creating ? 'Step 1 of 5' : 'Welcome back'}</Eyebrow>
         <Title>{creating ? 'Create your account.' : 'Sign in.'}</Title>
-        <Body>{creating ? 'Your email is never shown to other members.' : 'Use the email and password you signed up with.'}</Body>
+        <Body>{usePassword ? 'Use at least 8 characters.' : "We'll email you a 6-digit code. No password needed."}</Body>
         <Field
           label="Email"
           value={email}
@@ -53,6 +61,7 @@ export default function SignIn() {
           keyboardType="email-address"
           placeholder="you@example.com"
         />
+        {usePassword ? (
         <Field
           label="Password"
           value={password}
@@ -63,6 +72,7 @@ export default function SignIn() {
           placeholder="At least 8 characters"
           onSubmitEditing={() => valid && go()}
         />
+        ) : null}
         {creating ? (
           <Pressable
             accessibilityRole="checkbox"
@@ -92,6 +102,11 @@ export default function SignIn() {
         <Pressable accessibilityRole="button" onPress={() => { setMode(creating ? 'signin' : 'create'); setError(null); }}>
           <Text style={{ fontFamily: F.semi, fontSize: 14, color: C.ember }}>
             {creating ? 'I already have an account' : "I'm new here. Create an account"}
+          </Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => { setUsePassword(!usePassword); setError(null); }}>
+          <Text style={{ fontFamily: F.semi, fontSize: 14, color: C.soft }}>
+            {usePassword ? 'Email me a code instead' : 'Use a password instead'}
           </Text>
         </Pressable>
         <Small>Your email is only used to keep accounts accountable. Never shown.</Small>

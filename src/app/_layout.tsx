@@ -70,6 +70,7 @@ function Routes() {
       <Stack.Protected guard={isConfigured && !signedIn}>
         <Stack.Screen name="welcome" />
         <Stack.Screen name="sign-in" />
+        <Stack.Screen name="verify" />
       </Stack.Protected>
 
       <Stack.Protected guard={isConfigured && signedIn && !onboarded}>
