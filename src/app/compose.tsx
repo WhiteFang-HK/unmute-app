@@ -17,19 +17,39 @@ export default function Compose() {
   const [anon, setAnon] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const groups = useLoad(async () => (await loadGroups(session!.user.id)).filter((g) => g.my_status === 'approved'), []);
 
   async function post() {
     setBusy(true);
     setErr(null);
-    const { error } = await supabase.from('posts').insert({ group_id: group, body: body.trim(), is_anonymous: anon });
+    const { data, error } = await supabase
+      .from('posts')
+      .insert({ group_id: group, body: body.trim(), is_anonymous: anon })
+      .select('review_state')
+      .single();
     setBusy(false);
-    if (error) return setErr(friendlyError(error));
+    if (error) return setErr(error.message.includes('row-level') ? 'Your account is limited right now, so you can\'t post.' : friendlyError(error));
+    if (data?.review_state === 'pending') {
+      setPending(true);
+      return;
+    }
     router.back();
   }
 
   const joined = groups.data ?? [];
+  if (pending)
+    return (
+      <Screen footer={<Button label="Done" color={C.community} onPress={() => router.back()} />}>
+        <Header icon="close" />
+        <Text style={{ fontFamily: F.display, fontSize: 30, lineHeight: 34, color: C.text, marginTop: 24 }}>Thanks for sharing.</Text>
+        <Small style={{ marginTop: 12, fontSize: 15, lineHeight: 22 }}>
+          New members' first posts get a quick look from our team before others see them. It usually takes a few hours.
+          You can see it in the group, marked "Waiting for review".
+        </Small>
+      </Screen>
+    );
   return (
     <Screen footer={<Button label="Post" color={C.community} onPress={post} loading={busy} disabled={!group || body.trim().length < 2} />}>
       <Header icon="close" title="New post" />

@@ -17,6 +17,8 @@ export type Profile = {
   dating_on: boolean;
   care_on: boolean;
   discovery_paused: boolean;
+  show_age: boolean;
+  show_city: boolean;
   onboarding_step: 'basics' | 'stage' | 'interests' | 'pillars' | 'done';
   role: 'member' | 'moderator' | 'admin' | 'professional';
   status: 'active' | 'restricted' | 'suspended';
@@ -42,9 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       return null;
     }
-    const { data } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle();
-    setProfile((data as Profile) ?? null);
-    return (data as Profile) ?? null;
+    // Your own full profile (other members only ever see the public fields).
+    const { data } = await supabase.rpc('my_profile');
+    const me = ((data as Profile[] | null) ?? [])[0] ?? null;
+    setProfile(me);
+    return me;
   }, []);
 
   useEffect(() => {

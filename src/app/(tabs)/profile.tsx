@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { colourFor } from '@/components/post-card';
 import { Avatar, ErrorText, Screen, Small, Toggle } from '@/components/ui';
@@ -36,6 +36,7 @@ export default function Profile() {
 
   const links: [string, string, () => void, string?][] = [
     ['Edit profile', '', () => router.push('/edit-profile')],
+    ['Privacy & visibility', '', () => router.push('/privacy')],
     ['Blocked members', '', () => router.push('/blocked')],
     ['UNMUTE CARE', 'Open', () => router.push('/care'), C.care],
   ];
@@ -100,11 +101,7 @@ export default function Profile() {
         <Pressable accessibilityRole="button" onPress={signOut}>
           <Text style={{ fontFamily: F.bold, fontSize: 14, color: C.soft }}>Sign out</Text>
         </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() =>
-            Alert.alert('Delete account', 'In this test version, email the UNMUTE team to delete your account and data. Self-serve deletion comes in the next version.')
-          }>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/delete-account')}>
           <Text style={{ fontFamily: F.bold, fontSize: 14, color: C.emberLight }}>Delete account</Text>
         </Pressable>
       </View>

@@ -59,6 +59,18 @@ export default function Home() {
         {greeting()}, {first || 'friend'}.
       </Text>
 
+      {profile?.status === 'restricted' ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/restricted')}
+          style={{ marginTop: 14, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: C.ember, backgroundColor: '#2A1712' }}>
+          <Text style={{ fontFamily: F.bold, fontSize: 15, color: C.text }}>Your account is limited</Text>
+          <Text style={{ fontFamily: F.body, fontSize: 13, color: C.softer, marginTop: 2 }}>
+            You can browse, but not post or message. Tap to see why or ask for a review.
+          </Text>
+        </Pressable>
+      ) : null}
+
       <Card style={{ marginTop: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <Text style={{ fontFamily: F.bold, fontSize: 15, color: C.text }}>How&apos;s today feeling?</Text>

@@ -12,7 +12,7 @@ type Req = {
   id: string;
   note: string | null;
   created_at: string;
-  from: { display_name: string; age_range: string | null; city: string | null } | null;
+  from: { display_name: string; public_age_range: string | null; public_city: string | null } | null;
 };
 
 export default function Requests() {
@@ -22,7 +22,7 @@ export default function Requests() {
       must(
         await supabase
           .from('friend_requests')
-          .select('id, note, created_at, from:profiles!friend_requests_from_id_fkey(display_name, age_range, city)')
+          .select('id, note, created_at, from:profiles!friend_requests_from_id_fkey(display_name, public_age_range, public_city)')
           .eq('to_id', session!.user.id)
           .eq('status', 'pending')
           .order('created_at', { ascending: false }),
@@ -51,7 +51,7 @@ export default function Requests() {
               <Avatar name={r.from!.display_name} color={colourFor(r.from!.display_name)} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: F.bold, fontSize: 16, color: C.text }}>{r.from!.display_name}</Text>
-                <Small>{[r.from!.age_range, r.from!.city, timeAgo(r.created_at)].filter(Boolean).join(' · ')}</Small>
+                <Small>{[r.from!.public_age_range, r.from!.public_city, timeAgo(r.created_at)].filter(Boolean).join(' · ')}</Small>
               </View>
             </View>
             {r.note ? <Text style={{ fontFamily: F.body, fontSize: 14, lineHeight: 21, color: C.softer }}>“{r.note}”</Text> : null}

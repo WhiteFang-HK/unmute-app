@@ -78,7 +78,26 @@ export default function Chat() {
   function openMenu() {
     if (!c || !c.other_id) return;
     const other = c.other_id;
-    const actions: [string, () => void][] = [
+    const actions: [string, () => void][] = [];
+    if (c.kind === 'dating') {
+      actions.push([
+        'Unmatch',
+        () =>
+          Alert.alert(`Unmatch ${c.title}?`, "This chat closes for both of you and they won't appear in Dating again.", [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Unmatch',
+              style: 'destructive',
+              onPress: async () => {
+                const { data: m } = await supabase.rpc('match_for_conversation', { p_conversation: id });
+                if (m) await supabase.rpc('unmatch', { p_match: m });
+                router.back();
+              },
+            },
+          ]),
+      ]);
+    }
+    actions.push(
       ['Report', () => router.push({ pathname: '/report', params: { user: other, name: c.title } })],
       [
         'Block',
@@ -95,10 +114,10 @@ export default function Chat() {
             },
           ]),
       ],
-    ];
+    );
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
-        { options: [...actions.map((a) => a[0]), 'Cancel'], cancelButtonIndex: actions.length, destructiveButtonIndex: 1 },
+        { options: [...actions.map((a) => a[0]), 'Cancel'], cancelButtonIndex: actions.length, destructiveButtonIndex: actions.length - 1 },
         (i) => actions[i]?.[1](),
       );
     } else {

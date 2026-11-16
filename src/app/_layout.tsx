@@ -58,6 +58,7 @@ function Routes() {
 
   const signedIn = Boolean(session);
   const onboarded = profile?.onboarding_step === 'done';
+  const suspended = profile?.status === 'suspended';
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.ink } }}>
@@ -77,7 +78,12 @@ function Routes() {
         <Stack.Screen name="onboarding" />
       </Stack.Protected>
 
-      <Stack.Protected guard={isConfigured && signedIn && onboarded}>
+      {/* Suspended members only see their status and the appeal form */}
+      <Stack.Protected guard={isConfigured && signedIn}>
+        <Stack.Screen name="restricted" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isConfigured && signedIn && onboarded && !suspended}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="group/[id]" />
         <Stack.Screen name="post/[id]" />
@@ -92,6 +98,9 @@ function Routes() {
         <Stack.Screen name="edit-profile" />
         <Stack.Screen name="blocked" />
         <Stack.Screen name="admin" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="preview" />
+        <Stack.Screen name="delete-account" options={{ presentation: 'modal' }} />
       </Stack.Protected>
 
       {/* Reachable by anyone who failed the 30+ check */}

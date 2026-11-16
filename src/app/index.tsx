@@ -10,6 +10,7 @@ export default function Index() {
   if (!isConfigured) return <Redirect href="/setup-needed" />;
   if (!session) return <Redirect href="/welcome" />;
   if (!profile) return <Loading />;
+  if (profile.status === 'suspended') return <Redirect href="/restricted" />;
   if (profile.onboarding_step !== 'done') return <Redirect href="/onboarding" />;
   return <Redirect href="/home" />;
 }
