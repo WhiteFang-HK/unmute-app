@@ -1,6 +1,11 @@
 -- 0004 — Notifications (US-M16-01, US-M16-02, US-M16-03) and the welcome tour (US-M05-03)
 -- Safe to run more than once.
 
+-- pg_net lets the database call Expo's push service (Supabase ships it; skipped where missing).
+do $$ begin
+  create extension if not exists pg_net;
+exception when others then null; end $$;
+
 -- ── Welcome tour ────────────────────────────────────────────────────────────
 alter table public.profiles add column if not exists tour_seen boolean not null default false;
 grant update (tour_seen) on public.profiles to authenticated;
